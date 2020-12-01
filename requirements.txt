@@ -1,0 +1,7 @@
+pandas
+jinja2
+matplotlib
+argparse
+numpy
+seaborn
+progress

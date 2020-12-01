@@ -2,9 +2,7 @@
 
 import pandas as pd
 import math
-import numpy as np
 import argparse as arg
-import pprint
 
 
 class myDescribe(object):
@@ -17,15 +15,14 @@ class myDescribe(object):
         return num != num
 
     def mean(self, iterable):
-    #     print("iterable", iterable)
         s = 0.0
-        l = len(iterable)
+        length = len(iterable)
         for i in iterable:
             if math.isnan(i):
-                l -= 1
+                length -= 1
                 continue
             s += i
-        return s / l
+        return s / length
 
     def count(self, iterable):
         result = 0.0
@@ -58,18 +55,8 @@ class myDescribe(object):
         iterable.sort()
         i = float(len(iterable) * percent)
         return iterable[int(i)]
-    #     i = my_count(iterable)
-    #     for i in iterable:
-    #         if math.isnan(i):
-    #             continue
-    #         if i > result or math.isnan(result):
-    #             result = i
-    #     return result
 
     def std(self, iterable):
-        """
-        Ecart type
-        """
         result = 0.0
         mean = self.mean(iterable)
         count = self.count(iterable) - 1
@@ -86,7 +73,8 @@ class myDescribe(object):
         data = self.data.select_dtypes(include=['int64', 'float64'])
         result = pd.DataFrame(columns=data.columns.tolist(), index=index)
         for i in result:
-            if self.data[i].dtype != 'int64' and self.data[i].dtype != 'float64':
+            if self.data[i].dtype != 'int64' \
+                    and self.data[i].dtype != 'float64':
                 continue
             result[i]['mean'] = self.mean(self.data[i].values)
             result[i]['count'] = self.count(self.data[i].values)
@@ -97,8 +85,8 @@ class myDescribe(object):
             result[i]['25%'] = self.percent(self.data[i].values, 0.25)
             result[i]['75%'] = self.percent(self.data[i].values, 0.75)
         result.style.format({'Index': '{:.5f}'})
-        # result = result.style.format({'Index': '{:.5f}'})
         return result
+
 
 if __name__ == "__main__":
     parser = arg.ArgumentParser(description="describe some data")

@@ -1,3 +1,4 @@
 .vscode
 .ipy*
-*.ipynb
+thetas.csv
+houses.csv

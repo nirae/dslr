@@ -8,23 +8,49 @@ import argparse as arg
 class myDescribe(object):
 
     def __init__(self, file):
-        self.data = pd.read_csv(file)
+        try:
+            self.data = pd.read_csv(file)
+            self.data = self.data.drop(
+                [
+                    'Hogwarts House',
+                    'First Name',
+                    'Last Name',
+                    'Birthday',
+                    'Best Hand'
+                ],
+                axis=1
+            )
+        except (FileNotFoundError, ValueError, KeyError):
+            print("file not found or corrupted")
+            self.data = None
         pd.options.display.float_format = "{:.5f}".format
 
     def isNaN(self, num):
         return num != num
 
     def mean(self, iterable):
-        s = 0.0
+        """
+        Mean / Moyenne
+        All column values mean
+        formula:
+            mean(x) = sum(x) / len(x)
+        """
+
+        sum = 0.0
         length = len(iterable)
         for i in iterable:
             if math.isnan(i):
                 length -= 1
                 continue
-            s += i
-        return s / length
+            sum += i
+        return sum / length
 
     def count(self, iterable):
+        """
+        Count
+        The number of valid values in the column
+        """
+
         result = 0.0
         for i in iterable:
             if math.isnan(i):
@@ -33,6 +59,11 @@ class myDescribe(object):
         return result
 
     def min(self, iterable):
+        """
+        Min
+        The minimal value in the column
+        """
+
         result = iterable[0]
         for i in iterable:
             if math.isnan(i):
@@ -42,6 +73,11 @@ class myDescribe(object):
         return result
 
     def max(self, iterable):
+        """
+        Max
+        The maximal value in the column
+        """
+
         result = iterable[0]
         for i in iterable:
             if math.isnan(i):
@@ -51,24 +87,50 @@ class myDescribe(object):
         return result
 
     def percent(self, iterable, percent):
+        """
+        Percentile / Quartile (25%, 50%, 75%)
+        Get the column value at the x% position
+        example:
+            column = range(1000) -> [0, 1, 2, ... 1000]
+            percent = 0.5
+            result = column[len(column) * percent] -> 500
+            50% value of column is 500, 25% -> 250, etc...
+        """
+
         iterable = [x for x in iterable if not math.isnan(x)]
         iterable.sort()
         i = float(len(iterable) * percent)
         return iterable[int(i)]
 
     def std(self, iterable):
+        """
+        Standard deviation / Ecart type
+        All column values standard deviation
+
+        The standard deviation is a measure of the dispersion around the mean \
+        of a set of values. The smaller the std, the more homogeneous the \
+        values are
+
+        https://fr.wikipedia.org/wiki/%C3%89cart_type
+
+        formula:
+            std(x) = sum((x - mean) ** 2) / count(x)
+        """
+
         result = 0.0
         mean = self.mean(iterable)
         count = self.count(iterable) - 1
-        s = 0.0
+        sum = 0.0
         for i in iterable:
             if math.isnan(i):
                 continue
-            s += (i - mean) ** 2
-        result = s / count
+            sum += (i - mean) ** 2
+        result = sum / count
         return result ** (0.5)
 
     def describe(self):
+        if self.data is None:
+            return None
         index = ['count', 'mean', 'std', 'min', '25%', '50%', '75%', 'max']
         data = self.data.select_dtypes(include=['int64', 'float64'])
         result = pd.DataFrame(columns=data.columns.tolist(), index=index)
@@ -100,4 +162,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     d = myDescribe(args.file)
-    print(d.describe())
+    result = d.describe()
+    if result is not None:
+        print(d.describe())

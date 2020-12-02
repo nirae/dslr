@@ -9,23 +9,32 @@ import argparse as arg
 class myScatter(object):
 
     def __init__(self, file):
-        self.df = pd.read_csv(file)
-        self.df = self.df.drop(
-            [
-                'Index',
-                "Defense Against the Dark Arts",
-                "Arithmancy",
-                "Care of Magical Creatures"
-            ],
-            axis=1)
+        try:
+            self.df = pd.read_csv(file)
+            self.df = self.df.drop(
+                [
+                    'Index',
+                    "Defense Against the Dark Arts",
+                    "Arithmancy",
+                    "Care of Magical Creatures"
+                ],
+                axis=1)
+        except (FileNotFoundError, ValueError, KeyError):
+            print("file not found or corrupted")
+            self.df = None
 
     def print(self):
-        sns.pairplot(
+        if self.df is None:
+            return
+
+        p = sns.pairplot(
             self.df,
             dropna=True,
             hue="Hogwarts House",
             hue_order=['Ravenclaw', 'Hufflepuff', 'Slytherin', 'Gryffindor']
         )
+        p.fig.suptitle("Quelles caractéristiques allez-vous utiliser pour \
+entraîner votre prochaine régression logistique ?", y=1, fontsize=16)
         plt.show()
 
     def run(self):
@@ -34,8 +43,8 @@ class myScatter(object):
 
 if __name__ == "__main__":
     parser = arg.ArgumentParser(description="""
-    Quel cours de Poudlard a une répartition des notes homogènes entre \
-    les quatres maisons ?
+    Quelles caractéristiques allez-vous utiliser pour entraîner votre \
+prochaine régression logistique ?
     """)
     parser.add_argument(
         '-f',

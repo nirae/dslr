@@ -14,7 +14,6 @@ class Trainer(object):
         self.history = {}
         self.datafile = datafile
         self.output = outfile
-        self.df = pd.read_csv(datafile)
         self.learning_rate = learning_rate
         self.range = train_range
         self.houses = {
@@ -23,12 +22,18 @@ class Trainer(object):
             'Gryffindor': 2,
             'Hufflepuff': 3
         }
-        self.houses_indexes = \
-            [self.houses[x] for x in self.df['Hogwarts House']]
-        self.data = self.df.iloc[:, 6:]
-        self.data = self.data.replace(np.nan, 0)
-        self.data = self.standardize(self.data)
         self.thetas = []
+
+        try:
+            self.df = pd.read_csv(datafile)
+            self.houses_indexes = \
+                [self.houses[x] for x in self.df['Hogwarts House']]        
+            self.data = self.df.iloc[:, 6:]
+            self.data = self.data.replace(np.nan, 0)
+            self.data = self.standardize(self.data)
+        except (FileNotFoundError, ValueError, KeyError):
+            print("file not found or corrupted")
+            self.data = None
 
     def standardize(self, data):
         return (data - data.mean()) / data.std()
@@ -98,6 +103,7 @@ class Trainer(object):
         """
 
         self.thetas.to_csv(self.output)
+        print("the thetas was saved in the file %s" % self.output)
 
     def get_next_axe(self, axes, current, nrows):
         if current[0] + 1 > nrows - 1:
@@ -129,6 +135,8 @@ class Trainer(object):
         plt.show()
 
     def train(self, show_history):
+        if self.data is None:
+            return None
         self.bar = ChargingBar(
             'Training',
             max=(self.range * len(self.houses)),
@@ -200,5 +208,6 @@ if __name__ == "__main__":
         train_range=args.range
     )
     thetas = trainer.train(show_history=args.history)
-    print("Thetas:\n", thetas)
-    trainer.save_thetas()
+    if thetas is not None:
+        print("Thetas:\n", thetas)
+        trainer.save_thetas()

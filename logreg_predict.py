@@ -16,8 +16,8 @@ class Predicter(object):
         try:
             df = pd.read_csv(thetafile)
             self.thetas = df.drop(df.columns[0], axis=1)
-        except FileNotFoundError:
-            print("file %s not found" % thetafile)
+        except (FileNotFoundError, ValueError, KeyError):
+            print("file %s not found or corrupted" % thetafile)
             self.thetas = None
 
         try:
@@ -25,8 +25,8 @@ class Predicter(object):
             self.data = self.data.iloc[:, 6:]
             self.data = self.data.replace(np.nan, 0)
             self.data = self.standardize(self.data)
-        except FileNotFoundError:
-            print("file %s not found" % datafile)
+        except (FileNotFoundError, ValueError, KeyError):
+            print("file %s not found or corrupted" % datafile)
             self.data = None
 
     def standardize(self, data):
@@ -141,7 +141,7 @@ if __name__ == '__main__':
         '--thetafile',
         type=str,
         default='thetas.csv',
-        help="output theta file"
+        help="input theta file"
     )
     parser.add_argument(
         '-o',
